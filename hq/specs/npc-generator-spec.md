@@ -1,55 +1,39 @@
 # NPC Generator Spec
 
-**Status:** Queued (starts after Situation Engine ships)
+**Status:** Not started
 **Layer:** 6 — NPC Population
+**Depends on:** Homies types, influencing-concepts database (user-built)
 
 ## Goal
 
-Generate NPCs in two modes — Custom (user picks from pools) and Random (rolls everything) — from one shared system. User-curated influencing-concepts database biases the pools.
+Generate NPCs in two modes from identical pools: Custom (user picks) and Random (full roll). User's concept database biases weights.
 
-## Data Model
+## Pools
 
-```ts
-type NPC = {
-  id: string;
-  name: string;
-  face: string;
-  voice: string;
-  backstory: string;
-  interests: string[];
-  mode: 'custom' | 'random';
-  attention: number;
-  selfRegenRate: number;
-  messSpaceId: string;
-  conceptIds: string[]; // links to influencing-concepts DB
-  createdAt: string;
-};
-```
+- Name, appearance, voice, backstory, interests
+- Concepts from user DB add weighted flavor
 
-## Files to Touch
+## Files
 
-- `src/lib/npc/` — pools, roller, custom builder, concept DB client
-- Supabase tables: `npcs`, `concept_db`
-- `src/components/npc-creator/` — custom mode UI
-
-## Untouched
-
-- Player Homies
-- Gangland spawn logic (consumes NPCs)
+- `src/lib/npc/pools.ts`
+- `src/lib/npc/generator.ts` — custom + random modes
+- `src/lib/npc/concepts.ts` — loads user concept DB
+- `src/app/npc/page.tsx` — creation UI
 
 ## Acceptance Checklist
 
-- [ ] Custom mode lets user pick each field from pools
+- [ ] Custom mode lets user set every field
 - [ ] Random mode rolls all fields
-- [ ] Concept DB influences roll weights
-- [ ] NPCs get self-regenerating attention
-- [ ] Generated NPCs appear in Gangland
+- [ ] Same pools used in both modes
+- [ ] Concept DB weights affect output
+- [ ] Generated NPC saves to Supabase with always-on attention regen
+- [ ] NPCs appear in Gangland
 
 ## Risks
 
-- Concept DB starts empty; seed it with 20-30 entries
-- Over-reliance on LLM flavor text; keep pools primary
+- Concept DB format not defined yet — user to specify
+- Random mode may produce incoherent combos; light LLM pass optional
 
 ## Next Steps
 
-After ship: write `connections-spec.md`.
+After ship: connections spec.

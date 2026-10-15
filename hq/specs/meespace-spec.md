@@ -1,12 +1,12 @@
 # Meespace Spec
 
-**Status:** Queued (starts after Homies ships)
+**Status:** Not started
 **Layer:** 2 — Public Profiles
-**Source:** Existing Flyspace repo
+**Source:** Existing Flyspace repo (single HTML file)
 
 ## Goal
 
-Rename Flyspace to Meespace, rebrand, and reshape its profile JSON so Dial and Gangland can consume it.
+Rebrand Flyspace as Meespace and reshape its profile JSON so Dial and Gangland can read it. Keep the MySpace DNA — posts, Top 8, mood, glitter, autoplay music — but make the data contract explicit.
 
 ## Data Model
 
@@ -15,40 +15,42 @@ type MessSpace = {
   id: string;
   homieId: string;
   posts: { id: string; text: string; createdAt: string }[];
-  layout: object;   // maps to 3D home rooms in Gangland
+  layout: LayoutNode[];   // maps to 3D home rooms later
   theme: string;
   mood: string;
-  music: string | null;
-  updatedAt: string;
+  music: string | null;  // track reference from radio DBs
+  lastActiveAt: string;  // drives neglect rendering
+};
+
+type LayoutNode = {
+  type: "room" | "item" | "sign";
+  name: string;
+  children?: LayoutNode[];
 };
 ```
 
-## Files to Touch
+## Files
 
-- Flyspace repo: rename + rebrand (separate PR)
-- `src/types/index.ts` — add MessSpace type
-- `src/lib/meespace.ts` — new: Supabase CRUD
+- Rename repo flyspace → meespace (GitHub settings, no code change)
+- `src/lib/meespace/types.ts` — MessSpace + LayoutNode
+- `src/lib/meespace/profile.ts` — CRUD against Supabase
 - `src/app/meespace/[id]/page.tsx` — public profile route
-
-## Untouched
-
-- Dial repo (Layer 3)
-- Gangland assets
+- Port Flyspace HTML sections into React components one at a time
 
 ## Acceptance Checklist
 
-- [ ] Repo renamed to meespace
-- [ ] Branding swapped (Flyspace → Meespace)
-- [ ] Profile JSON matches data model
-- [ ] Posts, layout, theme, mood, music all persist to Supabase
-- [ ] Public route renders a profile from an id
-- [ ] Layout JSON is valid input for the home builder (Layer 4)
+- [ ] Repo renamed, branding swapped to Meespace
+- [ ] Profile JSON matches the contract above
+- [ ] Posts, theme, mood, music all persist
+- [ ] LayoutNode tree renders in a simple 2D preview
+- [ ] lastActiveAt updates on any edit
+- [ ] Dial can fetch a Meespace by homieId
 
 ## Risks
 
-- Flyspace is a single HTML file; modularizing it is the real work
-- Neglect rendering (run-down state) is visual-only in v1
+- Single-file Flyspace has no component boundaries; porting risks breaking glitter/autoplay
+- Neglect rendering (run-down state) is visual-only in v1 — no gameplay effect yet
 
 ## Next Steps
 
-After ship: write `dial-image-gen-spec.md`.
+After ship: Dial image-gen spec (branch already exists).

@@ -15,42 +15,38 @@ type Homie = {
   id: string;
   name: string;
   face: string;        // asset key from dot-grok library
-  voice: string;       // clip bank id
+  voice: string;       // clip bank key
   backstory: string;
   interests: string[]; // drives situation engine filtering
   attention: number;   // 0–100, drains on Dial, refills via Meespace care
   messSpaceId: string;
   createdAt: string;
-  updatedAt: string;
 };
 ```
 
-## Files to Touch
+## Files
 
-- `src/types/index.ts` — replace placeholder Homie type with above
-- `src/lib/homies.ts` — new: Supabase CRUD for Homies
-- `src/components/creator/` — new folder: face picker, voice picker, backstory input, interests tags
-- `src/app/homies/page.tsx` — new route rendering the creator
-
-## Untouched
-
-- Existing animation/episode system (extended later by situation engine)
-- dot-grok skills folder (reused by Gangland, not modified)
+- `src/lib/homies/types.ts` — Homie type (already partially in src/types)
+- `src/lib/homies/creator.ts` — face/voice/backstory/interests UI logic
+- `src/lib/homies/migrate.ts` — browser-storage → Supabase migration
+- `src/app/homies/page.tsx` — creator route
+- `supabase/migrations/001_homies.sql` — table + RLS
 
 ## Acceptance Checklist
 
-- [ ] Homie type matches data model exactly
-- [ ] Creator UI renders face, voice, backstory, interests
-- [ ] Saving a Homie writes to Supabase `homies` table
-- [ ] Loading a Homie reads from Supabase, not localStorage
-- [ ] Interests field accepts free text, stored as string array
-- [ ] No regressions in existing Homies animation playback
+- [ ] Homie type matches outline exactly
+- [ ] Creator saves all five fields to Supabase
+- [ ] Browser-storage Homies migrate without data loss
+- [ ] Interests array is non-empty on create
+- [ ] Attention defaults to 100
+- [ ] Existing Tony/Betty/Nori characters survive migration
+- [ ] No changes to Homies' animation or episode code
 
 ## Risks
 
-- Browser-to-Supabase migration may orphan existing local Homies; add a one-time import prompt
-- Attention field is new; default to 100 on create
+- Browser-to-Supabase migration may hit ID collisions with seeded NPCs
+- Dot-grok skill docs are heavy; keep them out of AI context during this pass
 
 ## Next Steps
 
-After ship: write `meespace-spec.md` using the Meespace data contract below as input.
+After ship: Meespace spec (rename Flyspace, reshape JSON contract).

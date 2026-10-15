@@ -1,11 +1,12 @@
 # Connections Spec
 
-**Status:** Queued (starts after NPC Generator ships)
+**Status:** Not started
 **Layer:** 7 — Social Graph
+**Depends on:** Homies, Meespace, Dial
 
 ## Goal
 
-Mutual add flow between Homies. Every connection is a two-person shared space. Connection list in the central app.
+Mutual links between Homies. Every connection is a shared space. Dial messages route through connections.
 
 ## Data Model
 
@@ -19,30 +20,25 @@ type Connection = {
 };
 ```
 
-## Files to Touch
+## Files
 
-- `src/lib/connections.ts` — mutual add, list, shared space
+- `src/lib/connections/types.ts`
+- `src/lib/connections/mutual.ts` — add/remove flow
+- `src/lib/connections/routing.ts` — Dial → connection
 - `src/app/connections/page.tsx` — list view
-- Supabase table: `connections`
-
-## Untouched
-
-- Dial send flow (consumes connections)
-- Gangland (proximity uses connections)
 
 ## Acceptance Checklist
 
-- [ ] Adding a Homie requires mutual confirmation
-- [ ] Connection creates a shared space record
-- [ ] Connection list renders all mutual links
-- [ ] Dial can only send to connected Homies
-- [ ] Removing a connection cleans up shared space
+- [ ] Adding is mutual (both sides see it)
+- [ ] Shared space ID created on link
+- [ ] Dial can target a connection
+- [ ] Connection list renders both Homies
+- [ ] Removing breaks the link both ways
 
 ## Risks
 
-- Mutual confirmation flow needs clear UX
-- Shared space schema may need expansion later
+- Mutual confirmation flow adds UX complexity
 
 ## Next Steps
 
-After ship: full system integration pass across all layers.
+After ship: attention mechanics spec (cross-layer).

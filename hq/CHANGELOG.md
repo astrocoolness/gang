@@ -2,8 +2,6 @@
 
 ## 2026-10-15
 
-- Added `SYSTEM-OUTLINE.md` — master plan, eight layers, build order 1-9
-- Added `EVOLUTION-ROUTINE.md` — design-build-test-ship loop, cadence, rules, file map
-- Added `homies-spec.md` — Layer 1 spec, ready to build
-- Added `meespace-spec.md` through `connections-spec.md` — queued specs for layers 2-7
-- HQ folder structure: specs/ and checklists/ directories scaffolded
+- Shipped `hq/SYSTEM-OUTLINE.md` and `hq/EVOLUTION-ROUTINE.md` — master plan and build loop committed to gang repo.
+- Shipped eight spec files: homies, meespace, dial-image-gen, gangland-zone1, home-builder, situation-engine, npc-generator, connections, attention.
+- Next cycle: Homies spec → build.

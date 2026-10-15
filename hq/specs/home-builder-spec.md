@@ -1,7 +1,8 @@
 # Home Builder Spec
 
-**Status:** Queued (starts after Gangland Zone 1 ships)
+**Status:** Not started
 **Layer:** 4b — Prompt-to-Home
+**Depends on:** Gangland zone 1, Meespace layout contract
 
 ## Goal
 
@@ -9,37 +10,35 @@ User types a home description. System sanitizes it against a modular block vocab
 
 ## Pipeline
 
-1. Prompt intake + sanitizer
-2. LLM assembler → layout spec
-3. Validation rules engine
-4. Renderer (modular blocks)
-5. Persistence → Meespace JSON
+1. Prompt intake + sanitizer (strip non-vocabulary terms)
+2. LLM assembler → LayoutNode[] spec
+3. Validation: no floating furniture, rooms connect to doors
+4. Renderer: assemble from asset library
+5. Persist: write layout back to MessSpace
 
-## Files to Touch
+## Files
 
-- `src/lib/home-builder/` — sanitizer, assembler, validator, renderer
-- `src/components/home-builder/` — prompt input, preview
-- Block asset library (from dot-grok tilesets)
-
-## Untouched
-
-- Gangland zone logic
-- Meespace profile UI
+- `src/lib/home-builder/sanitizer.ts`
+- `src/lib/home-builder/assembler.ts`
+- `src/lib/home-builder/validator.ts`
+- `src/lib/home-builder/renderer.ts`
+- `src/lib/home-builder/persist.ts`
+- `src/lib/home-builder/vocabulary.ts` — the allowed block list
 
 ## Acceptance Checklist
 
-- [ ] Sanitizer strips non-vocabulary terms
-- [ ] Assembler outputs valid layout spec
-- [ ] Validator catches floating furniture and disconnected rooms
-- [ ] Renderer produces viewable 3D home
-- [ ] Home saves as Meespace layout JSON
-- [ ] Re-editing a saved home reloads correctly
+- [ ] Sanitizer removes out-of-vocabulary terms
+- [ ] Assembler outputs valid LayoutNode[]
+- [ ] Validator catches floating and disconnected rooms
+- [ ] Renderer produces a visible 3D home
+- [ ] Layout round-trips through Meespace JSON
+- [ ] Broken assembler can be swapped without touching other stages
 
 ## Risks
 
-- LLM assembler inconsistency; constrain vocabulary hard
-- Large homes may exceed block budget
+- LLM assembler may invent geometry outside vocabulary despite sanitizer
+- Vocabulary size vs expressiveness tradeoff
 
 ## Next Steps
 
-After ship: write `situation-engine-spec.md`.
+After ship: situation-engine spec.

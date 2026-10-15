@@ -1,46 +1,47 @@
 # Situation Engine Spec
 
-**Status:** Queued (starts after Home Builder ships)
+**Status:** Not started
 **Layer:** 5 — Daily Scenes
+**Depends on:** Homies (interests), Meespace (profile state), radio DBs, event sources
 
 ## Goal
 
-Once per day per Homie, generate a scene from live data filtered through that Homie's interests. Output feeds Homies' animation pipeline.
+Once per day per Homie, generate a scene from live data filtered through that character's interests. Output feeds Homies' animation pipeline.
 
-## Data Sources
+## Sources
 
-- WUSB/WRIR/WPKN track logs
+- WUSB / WRIR / WPKN track logs (new + old / nostalgic)
 - News headlines
 - On-this-day events
 - Local Richmond events (concerts, releases)
+- Informal discovery (random from any source)
 
 ## Scenario Seeds
 
-New/old music, new/old books, news, on-this-day, informal discovery, bad day + messy room, cooking, trip planning.
+Music (new/old), books (new/old), news, on-this-day, discovery, bad day + messy room, cooking (new/old recipe), trip planning (hike/vacation/concert).
 
-## Files to Touch
+## Files
 
-- `src/lib/situation-engine/` — scheduler, source fetchers, seed picker, scene composer
-- Supabase table: `situation_logs`
-
-## Untouched
-
-- Homies animation core (consumes output only)
-- All other layers
+- `src/lib/situation/sources.ts` — data fetchers
+- `src/lib/situation/seeds.ts` — scenario pool
+- `src/lib/situation/filter.ts` — interests → source weighting
+- `src/lib/situation/scheduler.ts` — daily cron
+- `src/lib/situation/animate.ts` — handoff to Homies episode system
 
 ## Acceptance Checklist
 
 - [ ] Scheduler fires once per Homie per day
-- [ ] At least 2 live sources return data
-- [ ] Interests filter source selection
-- [ ] Scene output is valid animation input
-- [ ] Logs land in situation_logs
+- [ ] At least three distinct sources return data
+- [ ] Interests change which source wins
+- [ ] Scene output triggers an animation
+- [ ] Logs land in situation_logs table
+- [ ] No user input required
 
 ## Risks
 
-- Source APIs may be flaky; graceful fallback to seed-only scenes
-- Daily volume could spike costs
+- External APIs may be down; need fallback seeds
+- Cron on Vercel needs a workaround (use Supabase edge function or external ping)
 
 ## Next Steps
 
-After ship: write `npc-generator-spec.md`.
+After ship: npc-generator spec.
