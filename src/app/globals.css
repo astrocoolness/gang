@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #0a0a0f;
+  --fg: #e8e8f0;
+  --accent: #7c5cff;
+  --muted: #6b6b80;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+.gang-card {
+  background: #14141c;
+  border: 1px solid #2a2a38;
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.dial-ring {
+  animation: ring 1.6s ease-in-out infinite;
+}
+
+@keyframes ring {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(124, 92, 255, 0.4); }
+  50% { box-shadow: 0 0 0 12px rgba(124, 92, 255, 0); }
+}
