@@ -28,7 +28,7 @@ export default function HomiesPage() {
 
   return (
     <main className="max-w-4xl mx-auto px-4 py-12 flex flex-col gap-8">
-      <Link href="/" className="text-sm text-[var(--muted)]">← GANG</Link>
+      <Link href="/" className="text-sm text-[var(--muted)]">← Home</Link>
       <h1 className="text-4xl font-bold">Homies</h1>
 
       <form onSubmit={submit} className="gang-card flex flex-col gap-4">

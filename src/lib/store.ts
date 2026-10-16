@@ -37,11 +37,15 @@ export function useGang() {
 
   useEffect(() => {
     const sync = () => setState(load());
-    sync();
-    setReady(true);
+    // Hydrate from localStorage (gang:v1) after mount, outside the effect body.
+    const raf = window.requestAnimationFrame(() => {
+      sync();
+      setReady(true);
+    });
     window.addEventListener('gang:update', sync);
     window.addEventListener('storage', sync);
     return () => {
+      window.cancelAnimationFrame(raf);
       window.removeEventListener('gang:update', sync);
       window.removeEventListener('storage', sync);
     };

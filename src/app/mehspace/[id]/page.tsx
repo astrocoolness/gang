@@ -48,7 +48,7 @@ export default function MessSpacePage() {
 
   return (
     <main className="max-w-3xl mx-auto px-4 py-12 flex flex-col gap-6">
-      <Link href="/mess-space" className="text-sm text-[var(--muted)]">← Mess Space</Link>
+      <Link href="/mehspace" className="text-sm text-[var(--muted)]">← Mehspace</Link>
       <header className="gang-card flex flex-col gap-4">
         <div className="flex items-center gap-4">
           <span className="text-6xl">{homie.face_url}</span>

@@ -22,7 +22,7 @@ export default function HomieCard({ homie, onDelete }: { homie: Homie; onDelete?
       )}
       <AttentionBar value={homie.attention} />
       <div className="flex gap-2 text-sm">
-        <Link href={`/mess-space/${homie.id}`} className="flex-1 text-center rounded-lg border border-[#2a2a38] py-1.5 hover:border-[var(--accent)]">Mess Space</Link>
+        <Link href={`/mehspace/${homie.id}`} className="flex-1 text-center rounded-lg border border-[#2a2a38] py-1.5 hover:border-[var(--accent)]">Mehspace</Link>
         <Link href={`/dial/${homie.id}`} className="flex-1 text-center rounded-lg bg-[var(--accent)] py-1.5">Dial</Link>
         {onDelete && <button onClick={onDelete} className="px-2 text-[var(--muted)] hover:text-[#ff5c7c]" aria-label="Delete">✕</button>}
       </div>

@@ -6,7 +6,7 @@ export interface Homie {
   voice_id: string;
   backstory: string;
   interests: string[];
-  attention: number; // 0-100, drains on Dial, refills on Mess Space care
+  attention: number; // 0-100, drains on Dial, refills on Mehspace care
   created_at: string;
 }
 
