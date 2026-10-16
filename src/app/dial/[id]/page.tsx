@@ -22,7 +22,9 @@ export default function DialPage() {
   const [elapsed, setElapsed] = useState(0);
   const [drained, setDrained] = useState(0);
   const attentionRef = useRef(0);
-  attentionRef.current = homie?.attention ?? 0;
+  useEffect(() => {
+    attentionRef.current = homie?.attention ?? 0;
+  }, [homie?.attention]);
 
   useEffect(() => {
     if (!onCall) return;
@@ -67,8 +69,8 @@ export default function DialPage() {
 
       {muted && !onCall ? (
         <div className="text-center flex flex-col gap-3">
-          <p className="text-sm text-[var(--muted)] max-w-xs">{homie.name} has no attention left. Spend time on their Mess Space to bring the line back.</p>
-          <Link href={`/mess-space/${homie.id}`} className="rounded-full bg-[var(--accent)] px-6 py-3">Go to Mess Space</Link>
+          <p className="text-sm text-[var(--muted)] max-w-xs">{homie.name} has no attention left. Spend time on their Mehspace to bring the line back.</p>
+          <Link href={`/mehspace/${homie.id}`} className="rounded-full bg-[var(--accent)] px-6 py-3">Go to Mehspace</Link>
         </div>
       ) : onCall ? (
         <button onClick={() => setOnCall(false)} className="rounded-full bg-[#ff5c7c] w-20 h-20 text-3xl" aria-label="Hang up">✆</button>

@@ -30,7 +30,7 @@ export function endDial(session: DialSession): DialSession {
 }
 
 /**
- * Refill attention by caring for a Homie's Mess Space.
+ * Refill attention by caring for a Homie's Mehspace.
  * Each like, layout change, or comment restores a small amount.
  */
 export function refillAttention(current: number, action: 'like' | 'layout' | 'comment'): number {
