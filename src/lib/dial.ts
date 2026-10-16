@@ -37,3 +37,8 @@ export function refillAttention(current: number, action: 'like' | 'layout' | 'co
   const gain = { like: 3, layout: 5, comment: 8 }[action];
   return Math.min(100, current + gain);
 }
+
+/** A Homie at zero attention has a muted line and can't receive a Dial. */
+export function canDial(attention: number): boolean {
+  return attention > 0;
+}
