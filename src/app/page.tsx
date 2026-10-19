@@ -13,6 +13,7 @@ export default function Home() {
         <Link href="/mehspace" className="gang-card hover:border-[var(--accent)] transition">Mehspace</Link>
         <Link href="/dial" className="gang-card hover:border-[var(--accent)] transition dial-ring">Dial</Link>
         <Link href="/circles" className="gang-card hover:border-[var(--accent)] transition">Circles</Link>
+        <Link href="/onboarding" className="gang-card hover:border-[var(--accent)] transition">Your profile</Link>
       </div>
     </main>
   );

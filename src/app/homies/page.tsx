@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { FormEvent, useState } from 'react';
 import { useGang } from '@/lib/store';
 import HomieCard from '@/components/HomieCard';
+import ExportDeviceData from '@/components/ExportDeviceData';
 
 const FACES = ['😎', '🦊', '🐸', '👽', '🤖', '🐱', '💀', '🌞'];
 const VOICES = ['warm', 'raspy', 'bright', 'deep', 'whisper'];
@@ -30,6 +31,7 @@ export default function HomiesPage() {
     <main className="max-w-4xl mx-auto px-4 py-12 flex flex-col gap-8">
       <Link href="/" className="text-sm text-[var(--muted)]">← Home</Link>
       <h1 className="text-4xl font-bold">Homies</h1>
+      <ExportDeviceData />
 
       <form onSubmit={submit} className="gang-card flex flex-col gap-4">
         <h2 className="text-xl font-semibold">Create a Homie</h2>
