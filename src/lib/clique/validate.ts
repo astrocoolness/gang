@@ -34,7 +34,7 @@ export function parseProfileInput(form: FormData | Record<string, unknown>): { i
   return { input, errors };
 }
 
-/** Turn arbitrary text (e.g. a HOMIES² handle) into a valid username candidate. */
+/** Turn arbitrary text (e.g. an email local part) into a valid username candidate. */
 export function toUsernameCandidate(raw: string): string {
   const base = raw.toLowerCase().replace(/^@/, '').replace(/[^a-z0-9_]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 24);
   return base.length >= 3 ? base : (base + '_homie').slice(0, 24);

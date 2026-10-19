@@ -200,5 +200,71 @@ await fails(null, `select clique_start_dm($1)`, [users.bob], /permission/);
 await fails('ann', `select clique_actor_visibility(auth.uid())`, [], /permission/);
 ok('anon cannot call RPCs; internal helpers not callable');
 
+// ---- HOMIES² same-project importer (supabase/scripts/import_homies2.sql) ----
+// Stub HOMIES² tables using the column names the importer assumes (VERIFY against live schema).
+await db.exec(`
+  create table public.homies_profiles (id uuid primary key, display_name text, handle text, bio text,
+    status_text text, avatar_url text, created_at timestamptz default now());
+  create table public.homies_connections (id uuid primary key default gen_random_uuid(), requester_id uuid,
+    addressee_id uuid, status text, created_at timestamptz default now());
+  create table public.homies_threads (id uuid primary key default gen_random_uuid(), title text, created_by uuid,
+    created_at timestamptz default now());
+  create table public.homies_thread_members (thread_id uuid, user_id uuid);
+  create table public.homies_messages (id uuid primary key default gen_random_uuid(), thread_id uuid, sender_id uuid,
+    body text, created_at timestamptz default now());
+  create table public.homies_contacts (owner_id uuid, label text, phone_e164 text);
+`);
+const h2 = {};
+for (const name of ['eve', 'fay', 'gus']) {
+  h2[name] = (await db.query(`insert into auth.users (email) values ($1) returning id`, [`${name}@example.com`])).rows[0].id;
+}
+await db.query(`insert into homies_profiles (id, display_name, handle, avatar_url) values
+  ($1, 'Eve', '@ann', 'assets/homies/tony-adult.png'), ($2, 'Fay F', '@fay', 'assets/homies/nori-adult.png'),
+  ($3, 'Gus', null, null), (gen_random_uuid(), 'Ghost', '@ghost', null), ($4, 'Ann again', '@ann2', null)`,
+  [h2.eve, h2.fay, h2.gus, users.ann]);
+await db.query(`insert into homies_connections (requester_id, addressee_id, status) values
+  ($1, $2, 'accepted'), ($2, $3, 'pending'), ($1, $4, 'accepted')`, [h2.eve, h2.fay, h2.gus, users.ann]);
+const t1 = (await db.query(`insert into homies_threads (title, created_by) values ('', $1) returning id`, [h2.eve])).rows[0].id;
+const t2 = (await db.query(`insert into homies_threads (title, created_by) values ('The Block', $1) returning id`, [h2.eve])).rows[0].id;
+await db.query(`insert into homies_thread_members values ($1, $2), ($1, $3), ($4, $2), ($4, $3), ($4, $5)`,
+  [t1, h2.eve, h2.fay, t2, h2.gus]);
+await db.query(`insert into homies_messages (thread_id, sender_id, body) values ($1, $2, 'yo'), ($1, $3, 'hey'),
+  ($4, $2, 'block party'), ($4, $2, '   ')`, [t1, h2.eve, h2.fay, t2]);
+const t3 = (await db.query(`insert into homies_threads (title) values ('') returning id`)).rows[0].id;
+await db.query(`insert into homies_thread_members values ($1, $2), ($1, $3)`, [t3, users.ann, users.bob]);
+await db.query(`insert into homies_messages (thread_id, sender_id, body) values ($1, $2, 'old ann->bob')`, [t3, users.ann]);
+await db.query(`insert into homies_contacts values ($1, 'Mom', '+18045550100')`, [h2.eve]);
+await db.exec(readFileSync(join(here, '..', 'scripts', 'import_homies2.sql'), 'utf8'));
+
+const before = (await db.query(`select count(*)::int as n from clique_profiles`)).rows[0].n;
+const dry = (await db.query(`select clique_import_homies2() as r`)).rows[0].r;
+assert.equal(dry.mode, 'dry_run');
+assert.equal(dry.profiles, 3);
+assert.equal((await db.query(`select count(*)::int as n from clique_profiles`)).rows[0].n, before);
+assert.equal((await db.query(`select count(*)::int as n from clique_threads where legacy_source = 'homies2'`)).rows[0].n, 0);
+ok('importer dry run reports counts and writes nothing');
+const run1 = (await db.query(`select clique_import_homies2(true) as r`)).rows[0].r;
+assert.deepEqual(
+  [run1.profiles, run1.avatar_homies, run1.friendships, run1.threads_created, run1.dm_threads_merged, run1.messages,
+   run1.homies2_profiles_without_auth_user],
+  [3, 2, 3, 2, 1, 4, 1], JSON.stringify(run1));
+assert.equal((await db.query(`select count(*)::int as n from clique_messages where thread_id = $1`, [dm])).rows[0].n, 2);
+assert.equal((await db.query(`select count(*)::int as n from clique_messages m join homies_contacts c on m.body = c.phone_e164`)).rows[0].n, 0);
+ok('existing Clique DM is reused (history merged); contacts not imported');
+const eve = (await db.query(`select username, avatar_homie_id from clique_profiles where id = $1`, [h2.eve])).rows[0];
+assert.equal(eve.username, 'ann_2'); assert.ok(eve.avatar_homie_id);
+assert.equal((await db.query(`select username from clique_profiles where id = $1`, [users.ann])).rows[0].username, 'ann');
+ok('importer reuses auth ids, resolves username collisions, never overwrites existing profiles');
+assert.equal((await db.query(`select kind from clique_threads where legacy_id = $1`, [t1])).rows[0].kind, 'dm');
+assert.equal((await db.query(`select kind from clique_threads where legacy_id = $1`, [t2])).rows[0].kind, 'group');
+const flood = await db.query(`select count(*)::int as n from clique_activities where verb = 'befriended' and actor_id in ($1, $2, $3)`, [h2.eve, h2.fay, h2.gus]);
+assert.equal(flood.rows[0].n, 0);
+ok('importer maps DMs vs groups and does not flood Home with old friendships');
+const run2 = (await db.query(`select clique_import_homies2(true) as r`)).rows[0].r;
+assert.deepEqual([run2.profiles, run2.friendships, run2.threads_created, run2.thread_members, run2.messages], [0, 0, 0, 0, 0], JSON.stringify(run2));
+ok('importer is idempotent');
+await fails('fay', `select clique_import_homies2(true)`, [], /permission/);
+ok('importer is not callable through the API');
+
 console.log(`\nAll ${passed} checks passed against ${files.length} migrations.`);
 await db.close();

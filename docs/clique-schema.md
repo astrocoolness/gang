@@ -23,15 +23,33 @@ They only add things. Every object uses the `clique_` prefix, and every table ha
   friends migration *after* this one would replace `guard_clique_friendship_change()` and remove the trusted
   bypass that invite claims rely on. Also, if PR #28's `app/clique/*` pages ship, they shadow the `/clique` multi-zone rewrite.
 
+## HOMIES² import (same project)
+HOMIES² (`oesdpdcncwdjnfvludxx`) is the same Supabase project as rva.guru, so the import is a single SQL function that copies
+`homies_*` rows into `clique_*` and reuses `auth.users` ids directly. No email matching, no invites, no service keys.
+It lives in `supabase/scripts/import_homies2.sql`, **outside `migrations/`**, so `supabase db push` never runs it.
+- `select public.clique_import_homies2();` is a **dry run** (the default). It does all the work inside a subtransaction, rolls it back, and returns counts.
+- `select public.clique_import_homies2(true);` applies. It's idempotent (`legacy_source='homies2'` + `legacy_id`, `ON CONFLICT DO NOTHING`), so re-runs add only new rows.
+- Existing Clique profiles are never overwritten. Username collisions get `_2`, `_3`, … An existing Clique DM for the same pair is reused, and its history is merged.
+- `homies_contacts` (private phone book) is **not** imported. `homies_profile_links` is a follow-up.
+- Imported friendships don't generate "became friends" Home activity.
+- Only postgres/service_role can execute it (revoked from anon/authenticated). Drop it when done.
+- **VERIFY**: HOMIES² column names are inferred from `homies2/app.js`. Uncertain columns are read via `to_jsonb(row)->>'col'`, so a
+  missing column becomes NULL rather than an error. The header lists the columns that must exist. Check them on staging with the dry run.
+
 ## Validation (no live DB)
 `npm run db:validate` applies all migrations twice (to check idempotency) to an in-memory PGlite Postgres with stubbed
-Supabase `auth`/`storage` schemas and roles, then runs 35 RLS/RPC behavior checks. To prove coexistence:
+Supabase `auth`/`storage` schemas and roles, then runs 41 checks: RLS/RPC behavior plus the HOMIES² importer (dry run writes nothing, counts, collisions, DM merge,
+idempotency, contacts skipped, not API-callable) against stub `homies_*` tables. To prove coexistence:
 `RVA_CORE_SCHEMA=<rva core_schema.sql>[,<more.sql>] npm run db:validate`.
 
 ## Applying (Kieran)
-1. Back up / branch the rva.guru project (Supabase branching or a staging copy).
-2. Link the project: `supabase link --project-ref <rva-guru-ref>`. Then **on staging first**: `supabase db push` (or paste each file in order in the SQL editor).
-3. Run `supabase gen types typescript` and replace `src/lib/clique/types.ts` when convenient.
-4. Auth → URL config: add `https://rva.guru/clique/auth/callback`.
-5. Smoke test sign-in → `/clique/onboarding` → profile saved → Mehspace row created.
-6. Optional: run `scripts/import-homies2.ts` as a dry run, then `--apply` on staging, then production.
+1. Make a Supabase branch or staging copy of the rva.guru project (`oesdpdcncwdjnfvludxx`; it's also the HOMIES² project).
+2. Apply the migrations there: `supabase link --project-ref <staging-or-branch-ref>`, then `supabase db push`
+   (or paste `supabase/migrations/20261019*.sql` in order into the SQL editor).
+3. Auth → URL configuration: add `https://rva.guru/clique/auth/callback`.
+4. Smoke test: sign in → `/clique/onboarding` → save profile → a Mehspace row exists.
+5. HOMIES² import, in the SQL editor on staging: paste `supabase/scripts/import_homies2.sql`, run `select public.clique_import_homies2();`
+   (dry run) and check the counts. If a VERIFY column is wrong, adjust and re-run. Then `select public.clique_import_homies2(true);`.
+   Then `drop function public.clique_import_homies2(boolean);`.
+6. Repeat 2–5 on production. The old `homies_*` tables are left untouched (read-only fallback), and homies2.rva.guru keeps working.
+7. Optional: `supabase gen types typescript` → replace `src/lib/clique/types.ts`.
