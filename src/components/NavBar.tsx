@@ -26,7 +26,7 @@ export default function NavBar() {
             </Link>
           );
         })}
-        <Link href="/auth/login" className="hidden md:inline ml-auto text-sm text-[var(--muted)]">Sign in</Link>
+        <Link href="/onboarding" className="hidden md:inline ml-auto text-sm text-[var(--muted)]">Me</Link>
       </div>
     </nav>
   );
