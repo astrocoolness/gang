@@ -44,12 +44,15 @@ export default async function HomiePage({ params, searchParams }: {
             {` · ${h.visibility}`}
           </p>
         </div>
+        <div className="flex gap-2 text-sm">
+          <Link href={`/mehspace/homie/${h.id}`} className="rounded-lg border border-[#2a2a38] px-3 py-1.5 hover:border-[var(--accent)]">Mehspace</Link>
         {d.canEdit && (
-          <div className="flex gap-2 text-sm">
+          <>
             <Link href={`/homies/${h.id}/edit`} className="rounded-lg border border-[#2a2a38] px-3 py-1.5 hover:border-[var(--accent)]">Edit</Link>
             {pet && <Link href={`/homies/${h.id}/story`} className="rounded-lg border border-[#2a2a38] px-3 py-1.5 hover:border-[var(--accent)]">Story</Link>}
-          </div>
+          </>
         )}
+        </div>
       </header>
 
       {pet && (

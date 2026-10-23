@@ -10,15 +10,15 @@ export interface Homie {
   created_at: string;
 }
 
-export interface MessSpace {
+export interface LocalMehspace {
   id: string;
   homie_id: string;
   layout_json: Record<string, unknown>;
-  posts: MessPost[];
+  posts: LocalMehspacePost[];
   theme: string;
 }
 
-export interface MessPost {
+export interface LocalMehspacePost {
   id: string;
   author_homie_id: string;
   body: string;
