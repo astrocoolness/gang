@@ -168,8 +168,8 @@ export interface CliqueActivity {
   actor_id: string;
   verb:
     | 'posted' | 'blurbed' | 'befriended' | 'joined_circle' | 'created_circle'
-    | 'homie_created' | 'homie_evolved' | 'homie_claimed' | 'homie_reel' | 'homie_narrative' | 'homie_cared';
-  object_type: 'post' | 'blurb' | 'friendship' | 'circle' | 'homie' | 'homie_event';
+    | 'homie_created' | 'homie_evolved' | 'homie_claimed' | 'homie_reel' | 'homie_narrative' | 'homie_cared' | 'mood_changed';
+  object_type: 'post' | 'blurb' | 'friendship' | 'circle' | 'homie' | 'homie_event' | 'mehspace';
   object_id: string;
   circle_id: string | null;
   homie_id: string | null;

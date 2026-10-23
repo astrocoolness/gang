@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { supabaseConfigured } from '@/lib/supabase/env';
 import { getHomeFeed } from '@/lib/clique/homies';
-import { activityLine } from '@/lib/clique/feed';
+import { activityHref, activityLine } from '@/lib/clique/feed';
 
 export default async function Home() {
   const feed = supabaseConfigured ? await getHomeFeed().catch(() => null) : null;
@@ -18,10 +18,10 @@ export default async function Home() {
             <p className="text-sm text-[var(--muted)]">Quiet so far. <Link href="/homies/new" className="text-[var(--accent)]">Make a Homie</Link> or invite friends.</p>
           )}
           <ul className="flex flex-col gap-1 text-sm">
-            {feed.activities.map((a) => (
+            {feed.activities.map((a) => { const href = activityHref(a); return (
               <li key={a.id} className="flex justify-between gap-3">
-                {a.homie_id ? (
-                  <Link href={`/homies/${a.homie_id}`} className="hover:text-[var(--accent)]">{activityLine(a, feed.userId, feed.people)}</Link>
+                {href ? (
+                  <Link href={href} className="hover:text-[var(--accent)]">{activityLine(a, feed.userId, feed.people)}</Link>
                 ) : (
                   <span>{activityLine(a, feed.userId, feed.people)}</span>
                 )}
@@ -29,7 +29,7 @@ export default async function Home() {
                   {new Date(a.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'America/New_York' })}
                 </time>
               </li>
-            ))}
+            ); })}
           </ul>
         </section>
       ) : (

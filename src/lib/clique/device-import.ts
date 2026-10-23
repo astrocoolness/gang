@@ -3,7 +3,7 @@
  * Pure + isomorphic so it can be unit-tested and shared by client preview and server action.
  * See docs/import-from-device.md.
  */
-import type { Homie, MessSpace } from '@/types';
+import type { Homie, LocalMehspace } from '@/types';
 
 export const GANG_V1_KEY = 'gang:v1';
 export const LEGACY_SOURCE = 'gang:v1';
@@ -12,7 +12,7 @@ const MAX_POSTS_PER_SPACE = 500;
 
 export interface GangV1Snapshot {
   homies: Homie[];
-  spaces: MessSpace[];
+  spaces: LocalMehspace[];
 }
 
 const str = (v: unknown, max: number) => (typeof v === 'string' ? v.slice(0, max) : '');
@@ -26,7 +26,7 @@ export function parseGangV1(raw: unknown): GangV1Snapshot {
   );
   const ids = new Set(homies.map((h) => h.id));
   const spaces = (Array.isArray(obj.spaces) ? obj.spaces : []).filter(
-    (s): s is MessSpace => !!s && typeof s.id === 'string' && ids.has(s.homie_id),
+    (s): s is LocalMehspace => !!s && typeof s.id === 'string' && ids.has(s.homie_id),
   );
   return { homies, spaces };
 }

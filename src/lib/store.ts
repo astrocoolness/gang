@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Homie, MessPost, MessSpace } from '@/types';
+import { Homie, LocalMehspacePost, LocalMehspace } from '@/types';
 
 /**
  * Browser-storage persistence for v1. Shapes match the Supabase data model
@@ -11,7 +11,7 @@ const KEY = 'gang:v1';
 
 interface GangState {
   homies: Homie[];
-  spaces: MessSpace[];
+  spaces: LocalMehspace[];
 }
 
 const empty: GangState = { homies: [], spaces: [] };
@@ -59,7 +59,7 @@ export function useGang() {
     (input: Pick<Homie, 'name' | 'face_url' | 'voice_id' | 'backstory' | 'interests'>) => {
       const now = new Date().toISOString();
       const homie: Homie = { ...input, id: crypto.randomUUID(), owner_id: 'local', attention: 100, created_at: now };
-      const space: MessSpace = { id: crypto.randomUUID(), homie_id: homie.id, layout_json: { columns: 1 }, posts: [], theme: 'violet' };
+      const space: LocalMehspace = { id: crypto.randomUUID(), homie_id: homie.id, layout_json: { columns: 1 }, posts: [], theme: 'violet' };
       update((s) => ({ homies: [...s.homies, homie], spaces: [...s.spaces, space] }));
       return homie;
     },
@@ -76,7 +76,7 @@ export function useGang() {
   );
 
   const updateSpace = useCallback(
-    (homieId: string, fn: (m: MessSpace) => MessSpace) =>
+    (homieId: string, fn: (m: LocalMehspace) => LocalMehspace) =>
       update((s) => ({ ...s, spaces: s.spaces.map((m) => (m.homie_id === homieId ? fn(m) : m)) })),
     [update],
   );
@@ -89,6 +89,6 @@ export function useGang() {
   return { ...state, ready, createHomie, setAttention, updateSpace, deleteHomie };
 }
 
-export function newPost(authorId: string, body: string): MessPost {
+export function newPost(authorId: string, body: string): LocalMehspacePost {
   return { id: crypto.randomUUID(), author_homie_id: authorId, body, created_at: new Date().toISOString(), likes: [] };
 }
