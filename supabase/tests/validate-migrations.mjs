@@ -123,9 +123,58 @@ ok('claimant can edit page but not take ownership');
 await fails('dan', `select clique_claim_homie($1)`, [code], /not found/);
 ok('claim code is single-use');
 const pet = (await as('bob', `insert into clique_homies (kind, name) values ('pet', 'Nori') returning id`)).rows[0].id;
-await as('ann', `insert into clique_homie_events (homie_id, actor_id, type) values ($1, auth.uid(), 'care')`, [pet]);
-await fails('ann', `insert into clique_homie_events (homie_id, actor_id, type) values ($1, auth.uid(), 'evolve')`, [pet]);
+await as('ann', `insert into clique_homie_events (homie_id, actor_id, type, payload) values ($1, auth.uid(), 'care', '{"action":"feed","food":"fav"}')`, [pet]);
+await fails('ann', `insert into clique_homie_events (homie_id, actor_id, type, payload) values ($1, auth.uid(), 'evolve', '{"to":"kid"}')`, [pet]);
 ok('friends can care for a homie but not evolve it');
+
+// ---- Phase 3: care rules + care activity ----
+await fails('ann', `insert into clique_homie_events (homie_id, actor_id, type, payload) values ($1, auth.uid(), 'care', '{"action":"play"}')`, [pet], /cooldown/);
+ok('friend care has a cooldown');
+await fails('cat', `insert into clique_homie_events (homie_id, actor_id, type, payload) values ($1, auth.uid(), 'care', '{"action":"feed"}')`, [pet]);
+ok('non-friends cannot care for a friends-only homie');
+await fails('bob', `insert into clique_homie_events (homie_id, actor_id, type, payload) values ($1, auth.uid(), 'care', '{"action":"dance"}')`, [pet], /invalid care action/);
+await fails('bob', `insert into clique_homie_events (homie_id, actor_id, type) values ($1, auth.uid(), 'care')`, [pet], /invalid care action/);
+await fails('bob', `insert into clique_homie_events (homie_id, actor_id, type, payload) values ($1, auth.uid(), 'care', '{"action":"feed","food":{"x":1}}')`, [pet], /invalid care food/);
+ok('care payload is validated');
+for (const action of ['feed', 'play', 'sleep', 'wake', 'medicine']) {
+  await as('bob', `insert into clique_homie_events (homie_id, actor_id, type, payload) values ($1, auth.uid(), 'care', jsonb_build_object('action', $2::text))`, [pet, action]);
+}
+ok('owner care has no cooldown and may use every action');
+await fails('bob', `insert into clique_homie_events (homie_id, actor_id, type, payload) values ($1, auth.uid(), 'evolve', '{"to":"wizard"}')`, [pet], /invalid evolve/);
+await as('bob', `insert into clique_homie_events (homie_id, actor_id, type, payload) values ($1, auth.uid(), 'evolve', '{"from":"baby","to":"kid"}')`, [pet]);
+ok('owner evolves with a valid stage');
+const petFeed = (await as('bob', `select verb, actor_id, target_user_id, summary from clique_activities where homie_id = $1 order by created_at`, [pet])).rows;
+const cared = petFeed.filter((r) => r.verb === 'homie_cared');
+assert.equal(cared.length, 1, JSON.stringify(petFeed));
+assert.equal(cared[0].actor_id, users.ann); assert.equal(cared[0].target_user_id, users.bob);
+assert.equal(cared[0].summary.action, 'feed');
+assert.ok(petFeed.some((r) => r.verb === 'homie_evolved' && r.summary.to === 'kid'));
+ok("friend care reaches the owner's Home; owner care does not flood it; evolution is announced");
+assert.equal((await as('ann', `select count(*)::int as n from clique_activities where verb = 'homie_cared' and homie_id = $1`, [pet])).rows[0].n, 1);
+assert.equal((await as('cat', `select count(*)::int as n from clique_activities where homie_id = $1`, [pet])).rows[0].n, 0);
+assert.equal((await as('bob', `select visibility from clique_activities where verb = 'homie_cared'`)).rows[0].visibility, 'private');
+ok("care activity is private to the friend and the owner (no leak to the friend's friends)");
+// A friend who claimed a page cares as an editor (no cooldown, no activity spam).
+await as('cat', `insert into clique_homie_events (homie_id, actor_id, type, payload) values ($1, auth.uid(), 'care', '{"action":"sleep"}')`, [page]);
+await as('cat', `insert into clique_homie_events (homie_id, actor_id, type, payload) values ($1, auth.uid(), 'care', '{"action":"talk"}')`, [page]);
+assert.equal((await as('ann', `select count(*)::int as n from clique_activities where verb = 'homie_cared' and homie_id = $1`, [page])).rows[0].n, 0);
+ok('claimant cares as an editor');
+await as('bob', `update clique_homies set stats = '{"hunger": 50}', stage = 'kid', profile = jsonb_build_object('sim', jsonb_build_object('v', 1)) where id = $1`, [pet]);
+await as('ann', `update clique_homies set stats = '{"hunger": 100}' where id = $1`, [pet]);
+assert.equal((await as('bob', `select stats->>'hunger' as h from clique_homies where id = $1`, [pet])).rows[0].h, '50');
+ok('only editors persist the sim snapshot');
+await fails('ann', `select clique_guard_homie_event()`, [], /permission|trigger/);
+ok('care guard is internal');
+// Influence library basics.
+const inf = (await as('bob', `insert into clique_influences (title, kind, url, visibility) values ('Blue Train', 'music', 'https://example.com/x', 'friends') returning id`)).rows[0].id;
+await fails('bob', `insert into clique_influences (title, url) values ('bad', 'javascript:alert(1)')`, [], /check/);
+await as('bob', `insert into clique_homie_influences (homie_id, influence_id, weight) values ($1, $2, 0.8)`, [pet, inf]);
+assert.equal((await as('ann', `select count(*)::int as n from clique_homie_influences where homie_id = $1`, [pet])).rows[0].n, 1);
+await fails('ann', `insert into clique_homie_influences (homie_id, influence_id) values ($1, $2)`, [pet, inf]);
+const priv = (await as('ann', `insert into clique_influences (title) values ('secret') returning id`)).rows[0].id;
+await fails('bob', `insert into clique_homie_influences (homie_id, influence_id) values ($1, $2)`, [pet, priv]);
+assert.equal((await as('bob', `select id from clique_influences where id = $1`, [priv])).rows.length, 0);
+ok('influences: private by default, attach only your own visible ones to Homies you edit');
 
 // ---- mehspace sanitized render ----
 const space = (await as('ann', `select id from clique_mehspaces where user_id = auth.uid()`)).rows[0].id;
