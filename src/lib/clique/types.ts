@@ -52,7 +52,7 @@ export interface CliqueHomie {
   interests: string[];
   stage: HomieStage;
   stats: Record<string, number>;
-  traits: unknown[];
+  traits: unknown; // pets: engine Traits object; legacy rows may hold []
   profile: Record<string, unknown>;
   attention: number;
   visibility: Privacy;
@@ -168,7 +168,7 @@ export interface CliqueActivity {
   actor_id: string;
   verb:
     | 'posted' | 'blurbed' | 'befriended' | 'joined_circle' | 'created_circle'
-    | 'homie_created' | 'homie_evolved' | 'homie_claimed' | 'homie_reel' | 'homie_narrative';
+    | 'homie_created' | 'homie_evolved' | 'homie_claimed' | 'homie_reel' | 'homie_narrative' | 'homie_cared';
   object_type: 'post' | 'blurb' | 'friendship' | 'circle' | 'homie' | 'homie_event';
   object_id: string;
   circle_id: string | null;

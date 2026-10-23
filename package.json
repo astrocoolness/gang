@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "db:validate": "node supabase/tests/validate-migrations.mjs"
+    "db:validate": "node supabase/tests/validate-migrations.mjs",
+    "test:homies": "tsx src/lib/homies/__tests__/sim.test.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
@@ -28,6 +29,7 @@
     "eslint-config-next": "^16.4.2",
     "postcss": "^8.4.39",
     "tailwindcss": "^4.3.3",
+    "tsx": "^4.23.15",
     "typescript": "^5.5.4"
   }
 }
