@@ -14,7 +14,7 @@ export default function FeedPage() {
     <div>
       <p className="text-xs tracking-[.2em] uppercase text-[var(--accent)]">CLIQUE / SOCIAL</p>
       <h1 className="mt-2 text-4xl font-bold">The Local Feed</h1>
-      <p className="mt-3 text-sm text-[var(--muted)]">Recent posts from your Homies' Mehspaces, on this device only. Nothing here has been shared or synced with other accounts yet.</p>
+      <p className="mt-3 text-sm text-[var(--muted)]">Recent posts from your Homies&rsquo; Mehspaces, on this device only. Nothing here has been shared or synced with other accounts yet.</p>
     </div>
     <div className="gang-card flex flex-col sm:flex-row gap-3">
       <label className="flex-1 text-sm">Search posts
