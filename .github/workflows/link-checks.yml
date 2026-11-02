@@ -1,0 +1,36 @@
+name: CLIQUE secure link contract
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/lib/clique-link/**'
+      - 'src/app/api/apps/**'
+      - 'src/app/apps/**'
+      - 'migrations/20261102_clique_account_linking.sql'
+      - 'tests/clique-link-policy.test.mjs'
+      - 'package.json'
+      - '.github/workflows/link-checks.yml'
+      - 'src/components/NavBar.tsx'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run test:link
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run build
