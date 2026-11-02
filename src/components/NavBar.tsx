@@ -9,6 +9,7 @@ const TABS = [
   { href: '/homies', label: 'Homies' },
   { href: '/mehspace', label: 'Mehspace' },
   { href: '/circles', label: 'Circles' },
+  { href: '/apps', label: 'Connected apps' },
 ];
 
 export default function NavBar() {
