@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:link": "node --experimental-strip-types --test tests/clique-link-policy.test.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
