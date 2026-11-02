@@ -7,7 +7,7 @@ export default function Home() {
       <p className="text-lg text-[var(--muted)] max-w-md">
         Make your Homie. Tend their Mehspace. Dial when it matters.
       </p>
-      <div className="gang-card text-sm text-[var(--muted)]">Your feed of friend, Circle and Homie activity will show up here.</div>
+      <Link href="/feed" className="gang-card block text-sm text-[var(--muted)] hover:border-[var(--accent)] transition"><strong className="text-[var(--accent)]">Open the Local Feed</strong><span className="mt-1 block">Browse your Homies’ Mehspace posts by recency or popularity. Device-only until secure account sync is ready.</span></Link>
       <div className="flex flex-wrap gap-4">
         <Link href="/homies" className="gang-card hover:border-[var(--accent)] transition">Homies</Link>
         <Link href="/mehspace" className="gang-card hover:border-[var(--accent)] transition">Mehspace</Link>
