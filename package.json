@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test:feed": "node --experimental-strip-types --test tests/feed.test.ts"
+    "test:feed": "node --experimental-strip-types --test tests/feed.test.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
