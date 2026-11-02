@@ -67,6 +67,7 @@ set search_path = ''
 as $$
 declare
   v_challenge public.clique_link_challenges%rowtype;
+  v_candidate_owner uuid;
   v_subject_owner uuid;
   v_owner_subject text;
 begin
@@ -74,13 +75,19 @@ begin
     char_length(p_external_subject) not between 3 and 128 or
     p_external_subject !~ '^[a-zA-Z0-9][a-zA-Z0-9_.:@-]{2,127}$'
   then return 'invalid'; end if;
+  -- Acquire locks in consistent order across start, complete and revoke.
+  -- Read untrusted owner hint first, then lock the verified database owner
+  -- advisory key; lock/recheck the challenge row only after the owner lock.
+  select owner_id into v_candidate_owner from public.clique_link_challenges
+    where id = p_challenge_id;
+  if not found then return 'expired'; end if;
+  perform pg_catalog.pg_advisory_xact_lock(
+    pg_catalog.hashtextextended('clique:' || v_candidate_owner::text, 0));
   select * into v_challenge from public.clique_link_challenges
     where id = p_challenge_id for update;
-  if not found or v_challenge.consumed_at is not null or
+  if not found or v_challenge.owner_id <> v_candidate_owner or
+     v_challenge.consumed_at is not null or
      v_challenge.expires_at <= now() then return 'expired'; end if;
-  -- Serialize updates for the owner, including parallel challenge completes.
-  perform pg_catalog.pg_advisory_xact_lock(
-    pg_catalog.hashtextextended('clique:' || v_challenge.owner_id::text, 0));
   select owner_id into v_subject_owner from public.clique_account_links
     where app_key = 'homies' and external_subject = p_external_subject
       and revoked_at is null for update;
