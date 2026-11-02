@@ -32,7 +32,9 @@ test('blocks open redirects, fake origins, spoofed subdomains and HTTP',()=>{
 });
 test('privileged linking is off unless owner authorizes migration and secret config',()=>{
   const service=read('src/lib/clique-link/service.ts');
-  assert.match(service,/CLIQUE_ACCOUNT_LINKING_ENABLED === 'true'/);
+  assert.match(service,/assessLinkReadiness\(process\.env\)\.ready/);
+  const readiness=read('src/lib/clique-link/readiness.ts');
+  assert.match(readiness,/CLIQUE_ACCOUNT_LINKING_ENABLED !== 'true'/);
   assert.match(service,/persistSession: false/);
   assert.match(service,/CLIQUE_LINK_SERVICE_ROLE_KEY/);
   assert.match(service,/clique_link_start/);
