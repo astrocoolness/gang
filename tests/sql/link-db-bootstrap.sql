@@ -3,7 +3,8 @@ create schema if not exists auth;
 create table auth.users (id uuid primary key);
 create role anon nologin;
 create role authenticated nologin;
-create role service_role nologin;
+-- Match Supabase's RLS-bypassing server role ONLY in this disposable test database.
+create role service_role nologin bypassrls;
 grant usage on schema public to service_role;
 insert into auth.users(id) values
 ('11111111-1111-4111-8111-111111111111'),
