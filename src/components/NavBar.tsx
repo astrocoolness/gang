@@ -9,7 +9,6 @@ const TABS = [
   { href: '/homies', label: 'Homies' },
   { href: '/mehspace', label: 'Mehspace' },
   { href: '/circles', label: 'Circles' },
-  { href: '/apps', label: 'Connected apps' },
 ];
 
 export default function NavBar() {
@@ -27,6 +26,7 @@ export default function NavBar() {
             </Link>
           );
         })}
+        <Link href="/apps" className="text-sm text-[var(--muted)] hover:text-[var(--fg)]">Apps</Link>
         <Link href="/auth/login" className="hidden md:inline ml-auto text-sm text-[var(--muted)]">Sign in</Link>
       </div>
     </nav>
