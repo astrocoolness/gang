@@ -24,7 +24,13 @@ export function assessLinkReadiness(env: LinkRuntimeConfig): LinkReadiness {
   if ((env.CLIQUE_LINK_SECRET || '').trim().length < 32) missing.push('shared_secret');
   if (env.CLIQUE_LINK_SERVICE_ROLE_KEY &&
       env.CLIQUE_LINK_SECRET === env.CLIQUE_LINK_SERVICE_ROLE_KEY) missing.push('secret_reuse');
-  if (!httpsOrigin(env.CLIQUE_HOMIES_LINK_ORIGIN)) missing.push('homies_origin');
+  // Only verified, project-owned Homies hosts may receive link challenges.
+  // A new custom domain requires a reviewed code update before enabling.
+  const permittedHomiesHosts = new Set(['homies1.vercel.app', 'homies.rva.guru', 'myhomies.rva.guru']);
+  const homiesOrigin = env.CLIQUE_HOMIES_LINK_ORIGIN;
+  if (!httpsOrigin(homiesOrigin) || !permittedHomiesHosts.has(new URL(homiesOrigin!).hostname)) {
+    missing.push('homies_origin');
+  }
   if (!httpsOrigin(env.CLIQUE_PUBLIC_RETURN_ORIGIN) ||
       !['https://rva.guru','https://www.rva.guru'].includes(env.CLIQUE_PUBLIC_RETURN_ORIGIN || '')) {
     missing.push('return_origin');
