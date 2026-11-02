@@ -3,14 +3,10 @@ import { randomUUID } from 'node:crypto';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { SUPABASE_URL } from '@/lib/supabase/env';
 import { validatedHttpsOrigin } from './policy';
+import { assessLinkReadiness } from './readiness';
 
 export function linkingConfigured() {
-  return process.env.CLIQUE_ACCOUNT_LINKING_ENABLED === 'true' &&
-    !!SUPABASE_URL && !!process.env.CLIQUE_LINK_SERVICE_ROLE_KEY &&
-    !!process.env.CLIQUE_LINK_SECRET &&
-    !!validatedHttpsOrigin(process.env.CLIQUE_HOMIES_LINK_ORIGIN) &&
-    !!validatedHttpsOrigin(process.env.CLIQUE_PUBLIC_RETURN_ORIGIN) &&
-    !!process.env.CLIQUE_LINK_ALLOWED_ORIGINS;
+  return assessLinkReadiness(process.env).ready;
 }
 
 /** Server-only privileged client. No user JWT, no browser persistence. */
