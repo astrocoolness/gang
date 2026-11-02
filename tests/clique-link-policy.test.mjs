@@ -55,6 +55,10 @@ test('migration uses RLS, invoker RPC privileges, atomic locking, unique active 
   assert.match(sql,/security invoker/);
   assert.doesNotMatch(sql,/security definer/i);
   assert.match(sql,/for update/);
+  const completeSql=sql.split('create or replace function public.clique_link_complete')[1]?.split('create or replace function public.clique_link_revoke')[0] || '';
+  assert.ok(completeSql.indexOf('pg_catalog.pg_advisory_xact_lock') >= 0 &&
+    completeSql.indexOf('pg_catalog.pg_advisory_xact_lock') < completeSql.indexOf('where id = p_challenge_id for update'),
+    'Lock owner before challenge row to avoid revoke/complete deadlocks');
   assert.match(sql,/consumed_at is null/);
   assert.match(sql,/where revoked_at is null/);
   assert.match(sql,/grant execute on function public\.clique_link_complete\(uuid, text\) to service_role/);
