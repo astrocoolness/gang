@@ -21,7 +21,7 @@ test('popular and case-insensitive search work',()=>{
 });
 test('missing homies, invalid posts and invalid timestamps are omitted',()=>{
  const broken=[...spaces,{id:'s3',homie_id:'missing',posts:[{id:'private',body:'secret',created_at:'2026-11-02T08:00:00Z'}]},
- {id:'s4',homie_id:'h1',posts:[{id:'bad',body:'bad',created_at:'not-a-date'}]}] as MessSpace[];
+ {id:'s4',homie_id:'h1',posts:[{id:'bad',body:'bad',created_at:'not-a-date'}]}];
  assert.equal(buildLocalFeed(homies,broken).length,3);
 });
 test('pagination cap is bounded and source arrays are not mutated',()=>{
